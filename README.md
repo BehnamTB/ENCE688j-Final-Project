@@ -1,5 +1,6 @@
 # ENCE688j-Final-Project
-Project Objective
+
+**Project Objective**
 
 Adriana Bryant, Livingstone Imonitie, Asal Mehdi Tabrizi, Behnam Tahmasbi
 
