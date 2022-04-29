@@ -1,0 +1,207 @@
+---
+title: "ENCEJ_Project"
+output: html_document
+date: '2022-04-08'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<style>
+body {
+text-align: justify}
+</style>
+
+
+
+-------------------------------------------------------------------------------
+
+# Libraries and Fucntions
+
+## Libraries:
+
+
+
+```{r, message=FALSE, error=FALSE}
+# call the libraries
+library(lubridate)
+library(dplyr)
+library(knitr)
+# library(sp)
+# library(rgdal)
+library(RColorBrewer)
+library(ggplot2)
+library(gridExtra)
+library(kableExtra)
+library(lsr)
+library(sf)
+library(tmap)
+library(ggsn)
+# library(hudr)
+```
+
+
+## Functions:
+
+```{r}
+# input: a dataframe
+# output: a table that show variables, typeof, and 5 random variable of each one
+variablesInf.func = function(input.df){
+  #create data frame with 0 rows and 2 column
+  tmp.df <- data.frame(matrix(ncol = 4, nrow = 0))
+  # provide column names
+  colnames(tmp.df) <- c("variable name", "# of different values", "typeof" , "five random values")
+
+  for(i in 1:ncol(input.df)) {       # for-loop over columns
+    tmp.df[nrow(tmp.df) + 1,] = c(colnames(input.df)[i],
+                                  length(unique(input.df[,i])),
+                                  typeof(input.df[[i]]),
+                                  paste(as.character(sample(input.df[[i]],5)), collapse=", "))
+  }
+  return(tmp.df)
+}
+```
+
+
+
+-----------------------------------------------------------------------------------------------
+
+## DisasterDeclarationsSummaries
+
+Load disaster dataset
+
+```{r}
+# Disaster Declarations Summaries
+Disaster_Summaries <- read.csv('./Data/Disaster Dataset/DisasterDeclarationsSummaries.csv')
+```
+
+Data dimension
+```{r}
+dim(Disaster_Summaries)
+```
+
+Variable information
+```{r}
+variablesInf.func(Disaster_Summaries)#%>% 
+#       kable(caption = 'variable name Disaster_Summaries dataframe') %>%  # add table caption
+#       kable_classic_2() %>% 
+#       kable_styling(bootstrap_options = "striped", full_width = FALSE) %>%  # change style
+#       scroll_box(width = "100%")
+```
+
+
+```{r}
+table(Disaster_Summaries$declarationType , Disaster_Summaries$incidentType) #%>% 
+      # kable(caption = 'variable name Disaster_Summaries dataframe') %>%  # add table caption
+      # kable_classic_2() %>% 
+      # kable_styling(bootstrap_options = "striped", full_width = FALSE) %>%  # change style
+      # scroll_box(width = "100%")
+```
+
+```{r}
+table(Disaster_Summaries$incidentType) #%>% 
+      # kable(caption = 'variable name Disaster_Summaries dataframe') %>%  # add table caption
+      # kable_classic_2() %>% 
+      # kable_styling(bootstrap_options = "striped", full_width = FALSE) %>%  # change style
+      # scroll_box(width = "100%")
+```
+
+```{r}
+names(Disaster_Summaries)
+```
+
+
+drop column
+
+```{r}
+dop = c("fipsStateCode", "fipsCountyCode", "placeCode", "designatedArea", "declarationRequestNumber", "hash","lastRefresh" ,"id"  )
+Disaster_Summaries_sub1 = Disaster_Summaries[,!(names(Disaster_Summaries) %in% dop)]
+```
+
+
+```{r}
+names(Disaster_Summaries_sub1)
+```
+
+
+-----------------------------------------------------------------------------------------------
+
+## DisasterDeclarationsSummaries
+
+Load disaster dataset
+
+
+```{r}
+# Disaster Declarations Summaries
+HousingAssistanceRenters <- read.csv('./Data/FEMA/HousingAssistanceRenters.csv')
+```
+
+
+Data dimension
+```{r}
+dim(HousingAssistanceRenters)
+```
+
+Variable information
+```{r}
+variablesInf.func(HousingAssistanceRenters)#%>% 
+#       kable(caption = 'variable name Disaster_Summaries dataframe') %>%  # add table caption
+#       kable_classic_2() %>% 
+#       kable_styling(bootstrap_options = "striped", full_width = FALSE) %>%  # change style
+#       scroll_box(width = "100%")
+```
+
+
+```{r}
+variablesInf.func(Disaster_Summaries)
+```
+
+```{r}
+dim(Disaster_Summaries)
+```
+```{r}
+length(Disaster_Summaries$disasterNumber)
+```
+
+```{r}
+HousAssisRenters_disasterSumm<-merge(x=HousingAssistanceRenters, y=Disaster_Summaries ,by="disasterNumber",all.x=TRUE)
+```
+
+
+```{r}
+dim(HousAssisRenters_disasterSumm)
+dim(HousingAssistanceRenters)
+```
+
+```{r}
+variablesInf.func(HousAssisRenters_disasterSumm)
+```
+
+
+Filter on FL
+
+```{r}
+HousAssisRenters_disasterSumm_FL = filter(HousAssisRenters_disasterSumm, state.x == "FL")
+```
+
+
+```{r}
+variablesInf.func(HousAssisRenters_disasterSumm_FL)
+
+```
+
+--------------------------------------------------------------------------------------------------------------------
+
+### Load shapefile
+
+
+```{r}
+# Florida zipcode shapefile
+zipDataFL = st_read("./Data/shapefile/FL_zipcode.shp")
+
+
+# correct the fist column name
+colnames(zipData)[1] <- gsub('^...','',colnames(zipData)[1])
+```
+
